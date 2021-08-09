@@ -4,19 +4,19 @@
 # ------
 #
 # This script is designed to be a passive DeFiChain master node monitoring solution.
-# It will examine the state of your server and alert DFI Signal.
+# It will examine the state of your server and alert the DefiChain Masternode Health API.
 # More details and specifics can be found in the README.md of the GIT
-# repo linked below or on https://dfi-signal.de
+# repo linked below.
 #
 # Bugs or suggestions? Open issue or submit a pull request to
-# https://github.com/adrian-schnell/dfi_signal_server
+# https://github.com/defichain-api/masternode-health-server
 #
 
 # CONFIG
 # ------
 #
-# To run this script, you need to setup your user and server keys inside of DFI Signal.
-# Get more info on https://dfi-signal.de or directly inside the Bot https://t.me/DFI_Signal_bot
+# To run this script, you need to setup your user and server keys.
+# more information how to setup: https://docs.defichain-masternode-health.com/
 #
 SERVER_ID="00000000-0000-0000-0000-000000000000"
 USER_API_KEY="00000000-0000-0000-0000-000000000000"
@@ -55,7 +55,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 API_VERSION="1"
-API_DOMAIN="https://api.dfi-signal.de"
+API_DOMAIN="https://api.defichain-masternode-health.com"
 
 ######################################################################
 # Call DFI Signal API
@@ -82,7 +82,7 @@ fi
 # report values to DFI Signal Server
 ###########################################
 # CPU
-CPU_LOAD=`top -b -n1 | grep "load average" | awk '{print $(NF-2) $(NF-1) $NF}'`
+CPU_LOAD=`LANG=C LC_ALL=C uptime | grep "load average" | awk '{print $(NF-2) $(NF-1) $NF}'`
 
 # RAM
 FREE_DATA=`free -m | grep Mem`
@@ -111,6 +111,7 @@ fi
 
 # local data
 DEFI_CONNECTIONCOUNT=`../.defi/defi-cli getconnectioncount`
+NODE_UPTIME=`../.defi/defi-cli uptime`
 BLOCK_HEIGHT=$(../.defi/defi-cli getblockcount)
 LOCAL_HASH=$(../.defi/defi-cli getblockhash ${BLOCK_HEIGHT})
 if [[ -f ${DEBUG_LOG_PATH} ]]; then
@@ -128,6 +129,7 @@ if [ "$VERBOSE" = true ] ; then
     echo "############ blockchain analysis ############"
     echo current connections count: $DEFI_CONNECTIONCOUNT
     echo block diff: "$BLOCK_DIFF"
+    echo node uptime: "$NODE_UPTIME"
     echo local block height: "$BLOCK_HEIGHT"
     echo main net block height: "$MAIN_NET_BLOCK_HEIGHT"
     echo local hash: "$LOCAL_HASH"
@@ -137,6 +139,7 @@ if [ "$VERBOSE" = true ] ; then
 fi
 if [ "$REPORT_SEND" = true ] ; then
     report_json "block-info" "{\"connectioncount\": \"$DEFI_CONNECTIONCOUNT\",
+    \"node_uptime\": \"$NODE_UPTIME\",
     \"block_diff\": \"$BLOCK_DIFF\",
     \"block_height_local\": \"$BLOCK_HEIGHT\",
     \"main_net_block_height\": \"$MAIN_NET_BLOCK_HEIGHT\",
