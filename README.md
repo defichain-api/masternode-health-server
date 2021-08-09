@@ -21,4 +21,4 @@ The API only accepts requests every 15min!
 
 # Bugs or suggestions?
 Open issue or submit a pull request to
-[https://github.com/adrian-schnell/dfi_signal_server](https://github.com/adrian-schnell/dfi_signal_server)
+[https://github.com/defichain-api/masternode-health-server](https://github.com/defichain-api/masternode-health-server)
