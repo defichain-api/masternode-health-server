@@ -21,7 +21,7 @@ The API only accepts requests every 15min!
 
 # Upgrade to the current release
 
-````
+```
 cd defichain_masternode_health
 git pull
 ```
