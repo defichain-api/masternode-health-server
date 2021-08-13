@@ -11,7 +11,7 @@
 # Bugs or suggestions? Open issue or submit a pull request to
 # https://github.com/defichain-api/masternode-health-server
 #
-
+#
 # CONFIG
 # ------
 #
@@ -21,21 +21,18 @@
 SERVER_ID="00000000-0000-0000-0000-000000000000"
 USER_API_KEY="00000000-0000-0000-0000-000000000000"
 
-DEBUG_LOG_PATH="../.defi/debug.log"
+DEBUG_LOG_PATH=".defi/debug.log"
 
 ######################################################################
 # DO NOT CHANGE ANYTHING UNDERNEATH!
 ######################################################################
-CHECK_EMOJI=$(printf '\xE2\x9C\x85')
-ERROR_EMOJI=$(printf '\xE2\x9D\x8C')
-
 check_package_installed() {
     if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ];
     then
-      echo $ERROR_EMOJI you need to install $1 first to use this script.
+      echo you need to install $1 first to use this script.
       exit 0;
     else
-        echo $CHECK_EMOJI $1 is installed
+        echo $1 is installed
     fi
 }
 check_package_installed curl
@@ -43,9 +40,9 @@ check_package_installed jq
 
 
 REPORT_SEND=false
-VERBOSE=false
+VERBOSE=true
 
-while [[ "$#" -gt 0 ]]; do
+while [ "$#" -gt 0 ]; do
     case $1 in
         -r|--report) REPORT_SEND=true ;;
         -v|--verbose) VERBOSE=true ;;
@@ -72,8 +69,8 @@ report_json () {
 # Check for local chain split in debug.log
 ###########################################
 LOCAL_SPLIT_FOUND_IN_DEBUG_LOG=false
-if [[ -f ${DEBUG_LOG_PATH} ]]; then
-  if [[ $(tail -n 20 ${DEBUG_LOG_PATH} | grep -m 1 "proof of stake failed") ]]; then
+if [ -f ${DEBUG_LOG_PATH} ]; then
+  if [ $(tail -n 20 ${DEBUG_LOG_PATH} | grep -m 1 "proof of stake failed") ]; then
     LOCAL_SPLIT_FOUND_IN_DEBUG_LOG=true
   fi
 fi
@@ -110,11 +107,11 @@ if [ "$REPORT_SEND" = true ] ; then
 fi
 
 # local data
-DEFI_CONNECTIONCOUNT=`../.defi/defi-cli getconnectioncount`
-NODE_UPTIME=`../.defi/defi-cli uptime`
-BLOCK_HEIGHT=$(../.defi/defi-cli getblockcount)
-LOCAL_HASH=$(../.defi/defi-cli getblockhash ${BLOCK_HEIGHT})
-if [[ -f ${DEBUG_LOG_PATH} ]]; then
+DEFI_CONNECTIONCOUNT=`$(.defi/defi-cli getconnectioncount)`
+NODE_UPTIME=`$(.defi/defi-cli uptime)`
+BLOCK_HEIGHT=`$(.defi/defi-cli getblockcount)`
+LOCAL_HASH=`$(.defi/defi-cli getblockhash $BLOCK_HEIGHT)`
+if [ -f ${DEBUG_LOG_PATH} ]; then
     LOG_SIZE=$(stat -c %s ${DEBUG_LOG_PATH})
 else
     LOG_SIZE="n/a"
@@ -123,7 +120,7 @@ fi
 # main net data
 MAIN_NET_BLOCK_HEIGHT=$(/usr/bin/curl -s https://api.defichain.io/v1/getblockcount | /usr/bin/jq -r '.data')
 MAIN_NET_BLOCK_HASH=$(/usr/bin/curl -s https://mainnet-api.defichain.io/api/DFI/mainnet/block/${MAIN_NET_BLOCK_HEIGHT} | /usr/bin/jq -r '.hash')
-let "BLOCK_DIFF = $MAIN_NET_BLOCK_HEIGHT - $BLOCK_HEIGHT"
+BLOCK_DIFF=$(MAIN_NET_BLOCK_HEIGHT-BLOCK_HEIGHT)
 
 if [ "$VERBOSE" = true ] ; then
     echo "############ blockchain analysis ############"
