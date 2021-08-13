@@ -145,7 +145,7 @@ if [ "$REPORT_SEND" = true ] ; then
     \"main_net_block_height\": \"$MAIN_NET_BLOCK_HEIGHT\",
     \"local_hash\": \"$LOCAL_HASH\",
     \"main_net_block_hash\": \"$MAIN_NET_BLOCK_HASH\",
-    \"split_found\": $LOCAL_SPLIT_FOUND_IN_DEBUG_LOG,
+    \"local_split_found\": $LOCAL_SPLIT_FOUND_IN_DEBUG_LOG,
     \"logsize\": \"$LOG_SIZE\"}"
 fi
 
