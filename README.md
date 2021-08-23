@@ -29,3 +29,6 @@ git pull
 # Bugs or suggestions?
 Open issue or submit a pull request to
 [https://github.com/defichain-api/masternode-health-server](https://github.com/defichain-api/masternode-health-server)
+
+# License
+MIT

@@ -1,3 +1,4 @@
+import masternode_health
 import requests
 import json
 import argparse
@@ -20,13 +21,10 @@ def rpcquery(method, rpchost, rpcuser, rpcpassword, params = False):
         "params": params
     }
 
-    try:
-        response = requests.post(rpchost, auth=(rpcuser, rpcpassword), headers = headers, data=json.dumps(data), timeout=1000)
-        return response.json()['result']
-    except requests.exceptions.RequestException as e:
-        print("Request error: ", e)
 
-    return False
+    response = requests.post(rpchost, auth=(rpcuser, rpcpassword), headers = headers, data=json.dumps(data), timeout=1000)
+    response.raise_for_status()
+    return response.json()
 
 def checkAreNodesMining(max_lastblock_seconds, rpchost, rpcuser, rpcpassword):
     '''
@@ -36,7 +34,7 @@ def checkAreNodesMining(max_lastblock_seconds, rpchost, rpcuser, rpcpassword):
     mininginfo = rpcquery('getmininginfo', rpchost, rpcuser, rpcpassword)
     retval = []
 
-    for node in mininginfo['masternodes']:
+    for node in mininginfo['masternodes']['result']:
         lastBlockTime = datetime.strptime(node['lastblockcreationattempt'], "%Y-%m-%dT%H:%M:%SZ")
         now = datetime.utcnow()
         timeDiff = now - lastBlockTime
@@ -113,6 +111,3 @@ def main():
     }
 
     reportJson(args.api_key, 'server-stats', data)
-
-if __name__ == "__main__":
-    main()
