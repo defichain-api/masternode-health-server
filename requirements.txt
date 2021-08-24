@@ -1,2 +1,3 @@
 psutil
-pytest
+pytest==6.2.4
+flake8
