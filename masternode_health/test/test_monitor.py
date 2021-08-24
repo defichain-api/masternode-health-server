@@ -44,6 +44,18 @@ class HealthMonitorTest(TestCase):
         self.assertEqual(result['test'], 'ok')
 
     @mock.patch('masternode_health.monitor.requests.post')
+    def test_rpcquery_with_param_ok(self, mock_post):
+        data = {
+            'result': {"test": "ok"}
+        }
+
+        mock_resp = self._mock_response(status=200, json_data=data)
+        mock_post.return_value = mock_resp
+
+        result = rpcquery('getminiginfo', '', '', '', params={'id': 1})
+        self.assertEqual(result['test'], 'ok')
+
+    @mock.patch('masternode_health.monitor.requests.post')
     def test_rpcquery_failed(self, mock_post):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
