@@ -1,0 +1,4 @@
+psutil
+flake8
+requests
+coverage
