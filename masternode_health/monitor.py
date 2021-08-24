@@ -23,7 +23,12 @@ def rpcquery(method, rpchost, rpcuser, rpcpassword, params=False):
 
     response = requests.post(rpchost, auth=(rpcuser, rpcpassword), headers=headers, data=json.dumps(data), timeout=1000)
     response.raise_for_status()
-    return response.json()
+
+    data = response.json()
+
+    if 'result' in data:
+        return data['result']
+    return data
 
 
 def checkAreNodesMining(max_lastblock_seconds, rpchost, rpcuser, rpcpassword):

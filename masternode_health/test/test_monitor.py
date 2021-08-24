@@ -41,7 +41,7 @@ class HealthMonitorTest(TestCase):
         mock_post.return_value = mock_resp
 
         result = rpcquery('getminiginfo', '', '', '')
-        self.assertEqual(result['result']['test'], 'ok')
+        self.assertEqual(result['test'], 'ok')
 
     @mock.patch('masternode_health.monitor.requests.post')
     def test_rpcquery_failed(self, mock_post):
