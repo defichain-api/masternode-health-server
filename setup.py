@@ -1,11 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='masternode_health',
     version='0.1.0',
     author='Christian Sandrini',
     author_email='mail@chrissandrini.ch',
-    packages=['masternode_health'],
+    packages=find_packages(include=['masternode_health', 'masternode_health.*']),
     url='http://pypi.python.org/pypi/masternode_health',
     license='LICENSE.md',
     description='DeFiChain masternode monitoring solution for DFI Signal Bot',
