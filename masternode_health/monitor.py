@@ -34,7 +34,7 @@ def checkAreNodesMining(max_lastblock_seconds, rpchost, rpcuser, rpcpassword):
     mininginfo = rpcquery('getmininginfo', rpchost, rpcuser, rpcpassword)
     retval = []
 
-    for node in mininginfo['masternodes']['result']:
+    for node in mininginfo['masternodes']:
         lastBlockTime = datetime.strptime(node['lastblockcreationattempt'], "%Y-%m-%dT%H:%M:%SZ")
         now = datetime.utcnow()
         timeDiff = now - lastBlockTime
