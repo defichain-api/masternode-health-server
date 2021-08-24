@@ -1,11 +1,11 @@
-import masternode_health
 import requests
 import json
 import argparse
 import psutil
 from datetime import datetime
 
-def rpcquery(method, rpchost, rpcuser, rpcpassword, params = False):
+
+def rpcquery(method, rpchost, rpcuser, rpcpassword, params=False):
     '''
         Wrapper to run DefiChain RPC commands
     '''
@@ -21,10 +21,10 @@ def rpcquery(method, rpchost, rpcuser, rpcpassword, params = False):
         "params": params
     }
 
-
-    response = requests.post(rpchost, auth=(rpcuser, rpcpassword), headers = headers, data=json.dumps(data), timeout=1000)
+    response = requests.post(rpchost, auth=(rpcuser, rpcpassword), headers=headers, data=json.dumps(data), timeout=1000)
     response.raise_for_status()
     return response.json()
+
 
 def checkAreNodesMining(max_lastblock_seconds, rpchost, rpcuser, rpcpassword):
     '''
@@ -38,15 +38,16 @@ def checkAreNodesMining(max_lastblock_seconds, rpchost, rpcuser, rpcpassword):
         lastBlockTime = datetime.strptime(node['lastblockcreationattempt'], "%Y-%m-%dT%H:%M:%SZ")
         now = datetime.utcnow()
         timeDiff = now - lastBlockTime
-        
+
         if timeDiff.total_seconds() > max_lastblock_seconds:
             ret = False
         else:
             ret = True
-        
+
         retval.append((node['id'], ret))
-    
+
     return retval
+
 
 def reportJson(key, endpoint, data):
     headers = {'X-API-KEY': key}
@@ -76,15 +77,15 @@ def main():
 
     args = parser.parse_args()
 
-    if args.rpcuser == None or args.rpcpassword == None:
+    if args.rpcuser is None or args.rpcpassword is None:
         exit('Please specify rpcuser and rpcpassword argument')
-    
-    if args.defi_path == None:
+
+    if args.defi_path is None:
         exit('Please specify defi-path argument')
-    
-    if args.api_key == None:
+
+    if args.api_key is None:
         exit('Please specify an api-key argument')
-    
+
     checkNodes = checkAreNodesMining(args.max_block_seconds, args.rpchost, args.rpcuser, args.rpcpassword)
     print(checkNodes)
 
@@ -101,7 +102,7 @@ def main():
         print('############ mn server analysis ############')
         print('Load Average: {:.2f}\nMemory Total: {:.0f} GB\nMemory Used: {:.0f} GB\nDisk Total: {:.0f} GB\nDisk Used: {:.0f} GB'.format(loadavg, memTotal, memUsed, diskTotal, diskUsed))
         print('############ mn server analysis ############')
-    
+
     data = {
         "cpu": loadavg,
         "hdd_used": diskUsed,
