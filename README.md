@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/defichain-api/masternode-health-server/branch/master/graph/badge.svg?token=WWRB5IZN7A)](https://codecov.io/gh/defichain-api/masternode-health-server)
+
+
 # DFI Signal Server Sync
 This script is designed to be a DeFiChain master node monitoring solution for DFI Signal Bot.
 
