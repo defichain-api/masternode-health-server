@@ -130,6 +130,6 @@ def main():
 
     try:
         reportJson(args.api_key, 'server-stats', data)
-        #reportJson(args.api_key, 'node-info', data_node_info)
+        # reportJson(args.api_key, 'node-info', data_node_info)
     except requests.exceptions.HTTPError as err:
         raise SystemExit(err)
