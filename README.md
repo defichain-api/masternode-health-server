@@ -1,4 +1,6 @@
-[![codecov](https://codecov.io/gh/defichain-api/masternode-health-server/branch/master/graph/badge.svg?token=WWRB5IZN7A)](https://codecov.io/gh/defichain-api/masternode-health-server)
+[![Tests](https://github.com/defichain-api/masternode-health-server/actions/workflows/package.yml/badge.svg?branch=master)](https://github.com/defichain-api/masternode-health-server/actions/workflows/package.yml) [![codecov](https://codecov.io/gh/defichain-api/masternode-health-server/branch/master/graph/badge.svg?token=WWRB5IZN7A)](https://codecov.io/gh/defichain-api/masternode-health-server) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+
+
 
 
 # Masternode Health Server
