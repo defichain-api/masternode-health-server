@@ -15,7 +15,7 @@ setup(
     license='LICENSE.md',
     description='DeFiChain masternode monitoring solution for DFI Signal Bot',
     long_description=long_description,
-    long_description_content_type='text/markdown'
+    long_description_content_type='text/markdown',
     install_requires=['psutil'],
     entry_points={
         'console_scripts': ['masternode-health=masternode_health.monitor:main']
