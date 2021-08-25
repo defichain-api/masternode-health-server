@@ -2,7 +2,7 @@ import requests
 import json
 import argparse
 import psutil
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def rpcquery(method, rpchost, rpcuser, rpcpassword, params=False):
@@ -109,7 +109,7 @@ def main():
         print('Load Average: {:.2f}\nMemory Total: {:.0f} GB\nMemory Used: {:.0f} GB\nDisk Total: {:.0f} GB\nDisk Used: {:.0f} GB'.format(loadavg, memTotal, memUsed, diskTotal, diskUsed))
         print('############ mn server analysis ############')
         print('############ mn node info ############')
-        print('uptime: {:.0f}\nLocal block height: {:.0f}\nLocal block hash: {:s}'.format(uptime, blockcount, bestblockhash))
+        print('uptime: {:s}\nLocal block height: {:.0f}\nLocal block hash: {:s}'.format(str(timedelta(seconds=uptime)), blockcount, bestblockhash))
         for nodeId, online in checkNodes:
             print('Operator {:s}: {:s}\n'.format(nodeId, "Online" if online else "Offline!"))
         print('############ mn node info ############')
