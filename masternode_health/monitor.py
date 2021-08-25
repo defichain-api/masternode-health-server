@@ -15,10 +15,10 @@ def rpcquery(method, rpchost, rpcuser, rpcpassword, params=False):
         params = [params]
     headers = {'Content-type': 'application/json'}
     data = {
-        "jsonrpc": "1.0",
-        "id": "curltest",
-        "method": method,
-        "params": params
+        'jsonrpc': '1.0',
+        'id': 'curltest',
+        'method': method,
+        'params': params
     }
 
     response = requests.post(rpchost, auth=(rpcuser, rpcpassword), headers=headers, data=json.dumps(data), timeout=1000)
@@ -40,7 +40,7 @@ def checkAreNodesMining(max_lastblock_seconds, rpchost, rpcuser, rpcpassword):
     retval = []
 
     for node in mininginfo['masternodes']:
-        lastBlockTime = datetime.strptime(node['lastblockcreationattempt'], "%Y-%m-%dT%H:%M:%SZ")
+        lastBlockTime = datetime.strptime(node['lastblockcreationattempt'], '%Y-%m-%dT%H:%M:%SZ')
         now = datetime.utcnow()
         timeDiff = now - lastBlockTime
 
@@ -66,6 +66,61 @@ def reportJson(key, endpoint, data):
     return data
 
 
+def processNodeInfo(args):
+    try:
+        checkNodes = checkAreNodesMining(args.max_block_seconds, args.rpchost, args.rpcuser, args.rpcpassword)
+        blockcount = rpcquery('getblockcount', args.rpchost, args.rpcuser, args.rpcpassword)
+        bestblockhash = rpcquery('getbestblockhash', args.rpchost, args.rpcuser, args.rpcpassword)
+        uptime = rpcquery('uptime', args.rpchost, args.rpcuser, args.rpcpassword)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+    server_info = [('Uptime:', str(timedelta(seconds=uptime))), ('Local Block Height:', blockcount), ('Local Block Hash:', bestblockhash)]
+    for nodeId, online in checkNodes:
+        server_info.append((f'Operator ..{nodeId[:3]}:', 'Online' if online else 'Offline!'))
+
+    data_node_info = {
+        'block_height_local': blockcount,
+        'local_hash': bestblockhash,
+        'node_uptime': uptime,
+        'operator_status': list(map(lambda x: {'id': x[0], 'online': x[1]}, checkNodes))
+    }
+
+    try:
+        reportJson(args.api_key, 'node-info', data_node_info)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+    return server_info
+
+
+def processServerStats(args):
+    loadavg = psutil.getloadavg()[1]
+    vmem = psutil.virtual_memory()
+    memUsed = vmem.used / 1024**3
+    memTotal = vmem.total / 1024**3
+
+    disk = psutil.disk_usage(args.defi_path)
+    diskUsed = disk.used / 1024**3
+    diskTotal = disk.total / 1024**3
+
+    server_stats = [('Load Average:', loadavg, '   '), ('Memory Total:', int(memTotal), ' GB'), ('Memory Used:', int(memUsed), ' GB'), ('Disk Total:', int(diskTotal), ' GB'), ('Disk Used:', int(diskUsed), ' GB')]
+    data = {
+        'load_avg': loadavg,
+        'hdd_used': diskUsed,
+        'hdd_total': diskTotal,
+        'ram_used': memUsed,
+        'ram_total': memTotal
+    }
+
+    try:
+        reportJson(args.api_key, 'server-stats', data)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+    return server_stats
+
+
 def main():
     parser = argparse.ArgumentParser(description='DefiChain Masternode Monitor')
     parser.add_argument('--max-block-seconds', help='Alert if node did not try to calculate hash within max-block-seconds (default: 30 seconds)', default=30)
@@ -87,49 +142,14 @@ def main():
     if args.api_key is None:
         exit('Please specify an api-key argument')
 
-    try:
-        checkNodes = checkAreNodesMining(args.max_block_seconds, args.rpchost, args.rpcuser, args.rpcpassword)
-        blockcount = rpcquery('getblockcount', args.rpchost, args.rpcuser, args.rpcpassword)
-        bestblockhash = rpcquery('getbestblockhash', args.rpchost, args.rpcuser, args.rpcpassword)
-        uptime = rpcquery('uptime', args.rpchost, args.rpcuser, args.rpcpassword)
-    except requests.exceptions.HTTPError as err:
-        raise SystemExit(err)
-
-    loadavg = psutil.getloadavg()[1]
-    vmem = psutil.virtual_memory()
-    memUsed = vmem.used / 1024**3
-    memTotal = vmem.total / 1024**3
-
-    disk = psutil.disk_usage(args.defi_path)
-    diskUsed = disk.used / 1024**3
-    diskTotal = disk.total / 1024**3
+    server_stats = processServerStats(args)
+    server_info = processNodeInfo(args)
 
     if args.verbose:
-        print('############ mn server analysis ############')
-        print('Load Average: {:.2f}\nMemory Total: {:.0f} GB\nMemory Used: {:.0f} GB\nDisk Total: {:.0f} GB\nDisk Used: {:.0f} GB'.format(loadavg, memTotal, memUsed, diskTotal, diskUsed))
-        print('############ mn server analysis ############')
-        print('############ mn node info ############')
-        print('uptime: {:s}\nLocal block height: {:.0f}\nLocal block hash: {:s}'.format(str(timedelta(seconds=uptime)), blockcount, bestblockhash))
-        for nodeId, online in checkNodes:
-            print('Operator {:s}: {:s}\n'.format(nodeId, "Online" if online else "Offline!"))
-        print('############ mn node info ############')
+        print('----- [ server stats ] -----')
+        for stat in server_stats:
+            print('{:<15s}{:>10s}'.format(stat[0], str(stat[1]) + stat[2]))
 
-    data = {
-        "load_avg": loadavg,
-        "hdd_used": diskUsed,
-        "hdd_total": diskTotal,
-        "ram_used": memUsed,
-        "ram_total": memTotal
-    }
-
-    data_node_info = {
-        "block_height_local": blockcount,
-        "local_hash": bestblockhash,
-        "node_uptime": uptime
-    }
-
-    try:
-        reportJson(args.api_key, 'server-stats', data)
-        # reportJson(args.api_key, 'node-info', data_node_info)
-    except requests.exceptions.HTTPError as err:
-        raise SystemExit(err)
+        print('\n----- [ node info ] -----')
+        for stat in server_info:
+            print('{:<20s}{:<60s}'.format(stat[0], str(stat[1])))
