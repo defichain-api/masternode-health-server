@@ -55,19 +55,15 @@ def checkAreNodesMining(max_lastblock_seconds, rpchost, rpcuser, rpcpassword):
 
 
 def reportJson(key, endpoint, data):
-    headers = {'X-API-KEY': key}
+    headers = {'x-api-key': key}
     r = requests.post(f'https://api.defichain-masternode-health.com/v1/{endpoint}', headers=headers, json=data)
     r.raise_for_status()
 
-    print(r.json())
-
-    print(r.request.body)
-    print(r.request.headers)
-    print(r.request.url)
-    print(r.response.body)
-
-    if r.status_code != requests.codes.ok:
-        print(f"Request error with return code {r.status_code}")
+    data = r.json()
+    if 'result' in data:
+        return data['result']
+    
+    return data
 
 
 def main():
@@ -92,7 +88,6 @@ def main():
         exit('Please specify an api-key argument')
 
     checkNodes = checkAreNodesMining(args.max_block_seconds, args.rpchost, args.rpcuser, args.rpcpassword)
-    print(checkNodes)
 
     loadavg = psutil.getloadavg()[1]
     vmem = psutil.virtual_memory()
@@ -109,11 +104,14 @@ def main():
         print('############ mn server analysis ############')
 
     data = {
-        "cpu": loadavg,
+        "load_avg": loadavg,
         "hdd_used": diskUsed,
         "hdd_total": diskTotal,
         "ram_used": memUsed,
         "ram_total": memTotal
     }
 
-    reportJson(args.api_key, 'server-stats', data)
+    try:
+        reportJson(args.api_key, 'server-stats', data)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
