@@ -6,27 +6,57 @@ This script is designed to be a DeFiChain master node monitoring solution for DF
 
 # Installation
 
-- copy this repo on your server - e.g. with `git clone https://github.com/defichain-api/masternode-health-server.git defichain_masternode_health defichain_masternode_health`
-- Ensure curl and jq are installed in `/usr/bin/`
-- Run the script from the home directory that contains the `.defi` folder (same user than running the masternode)
-- get your API KEY and Server ID from the API - take a look at the [documentation](https://docs.defichain-masternode-health.com/) and copy them to the script
-
-To run this script, I recommend a cronjob.
-
-To add it to your crontab, use 
-
-```
-crontab -l | { cat; echo "*/15 * * * * ~/defichain_masternode_health/masternode_health.sh"; } | crontab -
-```
-
-Important:
-The API only accepts requests every 15min!
+- Install pip3 (pip from python v3. Some operating systems just name it ```pip```)
+- Run ```pip3 install masterhode-health```
 
 # Upgrade to the current release
 
 ```
-cd defichain_masternode_health
-git pull
+pip3 install --upgrade masternode-health
+```
+
+# Usage
+
+```
+masternode-health --help
+usage: masternode-health [-h] [--max-block-seconds MAX_BLOCK_SECONDS] [--rpcuser RPCUSER] [--rpcpassword RPCPASSWORD] [--rpchost RPCHOST] [--verbose] [--defi-path DEFI_PATH]
+                         [--api-key API_KEY]
+
+DefiChain Masternode Monitor
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --max-block-seconds MAX_BLOCK_SECONDS
+                        Alert if node did not try to calculate hash within max-block-seconds (default: 30 seconds)
+  --rpcuser RPCUSER     RPC username
+  --rpcpassword RPCPASSWORD
+                        RPC password
+  --rpchost RPCHOST     RPC host (default: http://localhost:8554)
+  --verbose             Prints stats to stdout
+  --defi-path DEFI_PATH
+                        Path to your .defi folder. Example: /home/defi/.defi
+  --api-key API_KEY     API Key
+```
+
+You can manually run it with
+
+```
+masternode-health --rpcuser user --rpcpassword password --defi-path /home/chris/.defi --verbose --api-key=xxx
+
+############ mn server analysis ############
+Load Average: 0.14
+Memory Total: 126 GB
+Memory Used: 3 GB
+Disk Total: 933 GB
+Disk Used: 53 GB
+############ mn server analysis ############
+############ mn node info ############
+uptime: 247904
+Local block height: 1131809
+Local block hash: 4737d0f0633275a102142b37feb6ab6bf2ed3ab83ca58962a410ca70d6b089c7
+Operator xxx: Online
+Operator yyy: Online
+############ mn node info ############
 ```
 
 # Bugs or suggestions?
