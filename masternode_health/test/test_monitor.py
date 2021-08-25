@@ -167,7 +167,7 @@ class HealthMonitorTest(TestCase):
 
         result = checkAreNodesMining(30, '', '', '')
         self.assertEqual(len(result), 0)
-    
+
     @mock.patch('masternode_health.monitor.requests.post')
     def test_reportJson_ok(self, mock_post):
         data = {
