@@ -59,6 +59,12 @@ Operator yyy: Online
 ############ mn node info ############
 ```
 
+Add into crontab to check every 5 minutes
+
+```
+*/5 * * * * masternode-health --rpcuser user --rpcpassword password --defi-path /home/user/.defi --api-key=xxx
+```
+
 # Bugs or suggestions?
 Open issue or submit a pull request to
 [https://github.com/defichain-api/masternode-health-server](https://github.com/defichain-api/masternode-health-server)
