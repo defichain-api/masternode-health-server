@@ -41,7 +41,7 @@ optional arguments:
 You can manually run it with
 
 ```
-masternode-health --rpcuser user --rpcpassword password --defi-path /home/chris/.defi --verbose --api-key=xxx
+masternode-health --rpcuser user --rpcpassword password --defi-path /home/user/.defi --verbose --api-key=xxx
 
 ############ mn server analysis ############
 Load Average: 0.14
@@ -51,7 +51,7 @@ Disk Total: 933 GB
 Disk Used: 53 GB
 ############ mn server analysis ############
 ############ mn node info ############
-uptime: 247904
+uptime: 2 days, 21:00:11
 Local block height: 1131809
 Local block hash: 4737d0f0633275a102142b37feb6ab6bf2ed3ab83ca58962a410ca70d6b089c7
 Operator xxx: Online
