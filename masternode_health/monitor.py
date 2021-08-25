@@ -2,7 +2,7 @@ import requests
 import json
 import argparse
 import psutil
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def rpcquery(method, rpchost, rpcuser, rpcpassword, params=False):
@@ -62,7 +62,7 @@ def reportJson(key, endpoint, data):
     data = r.json()
     if 'result' in data:
         return data['result']
-    
+
     return data
 
 
@@ -87,7 +87,13 @@ def main():
     if args.api_key is None:
         exit('Please specify an api-key argument')
 
-    checkNodes = checkAreNodesMining(args.max_block_seconds, args.rpchost, args.rpcuser, args.rpcpassword)
+    try:
+        checkNodes = checkAreNodesMining(args.max_block_seconds, args.rpchost, args.rpcuser, args.rpcpassword)
+        blockcount = rpcquery('getblockcount', args.rpchost, args.rpcuser, args.rpcpassword)
+        bestblockhash = rpcquery('getbestblockhash', args.rpchost, args.rpcuser, args.rpcpassword)
+        uptime = rpcquery('uptime', args.rpchost, args.rpcuser, args.rpcpassword)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
 
     loadavg = psutil.getloadavg()[1]
     vmem = psutil.virtual_memory()
@@ -102,6 +108,11 @@ def main():
         print('############ mn server analysis ############')
         print('Load Average: {:.2f}\nMemory Total: {:.0f} GB\nMemory Used: {:.0f} GB\nDisk Total: {:.0f} GB\nDisk Used: {:.0f} GB'.format(loadavg, memTotal, memUsed, diskTotal, diskUsed))
         print('############ mn server analysis ############')
+        print('############ mn node info ############')
+        print('uptime: {:s}\nLocal block height: {:.0f}\nLocal block hash: {:s}'.format(str(timedelta(seconds=uptime)), blockcount, bestblockhash))
+        for nodeId, online in checkNodes:
+            print('Operator {:s}: {:s}\n'.format(nodeId, "Online" if online else "Offline!"))
+        print('############ mn node info ############')
 
     data = {
         "load_avg": loadavg,
@@ -111,7 +122,14 @@ def main():
         "ram_total": memTotal
     }
 
+    data_node_info = {
+        "block_height_local": blockcount,
+        "local_hash": bestblockhash,
+        "node_uptime": uptime
+    }
+
     try:
         reportJson(args.api_key, 'server-stats', data)
+        #reportJson(args.api_key, 'node-info', data_node_info)
     except requests.exceptions.HTTPError as err:
         raise SystemExit(err)
