@@ -1,10 +1,54 @@
-from masternode_health.monitor import rpcquery, checkAreNodesMining, reportJson
+from masternode_health.monitor import rpcquery, checkAreNodesMining, reportJson, processNodeInfo, processServerStats, parse_args
 from unittest import TestCase, mock
 from requests.exceptions import HTTPError
 from datetime import datetime
 
 
+class ParserTest(TestCase):
+
+    def test_all_arguments(self):
+        args = parse_args(['--rpcuser', 'test', '--rpchost', 'host', '--rpcpassword', 'password', '--verbose', '--defi-path', 'path', '--api-key', 'key', '--max-block-seconds', '30'])
+
+        self.assertEqual(args.rpcuser, 'test')
+        self.assertEqual(args.rpchost, 'host')
+        self.assertEqual(args.rpcpassword, 'password')
+        self.assertTrue(args.verbose)
+        self.assertEqual(args.defi_path, 'path')
+        self.assertEqual(args.api_key, 'key')
+        self.assertEqual(args.max_block_seconds, 30)
+
+    def test_default_arguments(self):
+        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--defi-path', 'path', '--api-key', 'key'])
+
+        self.assertEqual(args.rpcuser, 'test')
+        self.assertEqual(args.rpchost, 'http://localhost:8554')
+        self.assertEqual(args.rpcpassword, 'password')
+        self.assertTrue(args.verbose)
+        self.assertEqual(args.defi_path, 'path')
+        self.assertEqual(args.api_key, 'key')
+        self.assertEqual(args.max_block_seconds, 30)
+
+    def test_rpc_creds_missing(self):
+        with self.assertRaises(SystemExit) as cm:
+            parse_args([])
+
+        self.assertEqual(cm.exception.code, 'Please specify rpcuser and rpcpassword argument')
+
+    def test_defi_path_missing(self):
+        with self.assertRaises(SystemExit) as cm:
+            parse_args(['--rpcuser', 'test', '--rpcpassword', 'password'])
+
+        self.assertEqual(cm.exception.code, 'Please specify defi-path argument')
+
+    def test_apikey_missing(self):
+        with self.assertRaises(SystemExit) as cm:
+            parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--defi-path', 'path'])
+
+        self.assertEqual(cm.exception.code, 'Please specify an api-key argument')
+
+
 class HealthMonitorTest(TestCase):
+
     def _mock_response(
             self,
             status=200,
@@ -185,3 +229,19 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
         self.assertRaises(HTTPError, reportJson, 'key', 'endpoint', {})
+
+    @mock.patch('masternode_health.monitor.requests.post')
+    def test_processNodeInfo_failed(self, mock_post):
+        mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
+        mock_post.return_value = mock_resp
+
+        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--defi-path', 'path', '--api-key', 'key'])
+        self.assertRaises(SystemExit, processNodeInfo, args)
+
+    @mock.patch('masternode_health.monitor.requests.post')
+    def test_processServerStats_failed(self, mock_post):
+        mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
+        mock_post.return_value = mock_resp
+
+        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--defi-path', '/', '--api-key', 'key'])
+        self.assertRaises(SystemExit, processServerStats, args)
