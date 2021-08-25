@@ -1,8 +1,10 @@
 [![codecov](https://codecov.io/gh/defichain-api/masternode-health-server/branch/master/graph/badge.svg?token=WWRB5IZN7A)](https://codecov.io/gh/defichain-api/masternode-health-server)
 
 
-# DFI Signal Server Sync
-This script is designed to be a DeFiChain master node monitoring solution for DFI Signal Bot.
+# Masternode Health Server
+This script is designed for collecting server & DeFiChain node information of your system and send them to the [DeFiChain Masternode Health API](https://github.com/defichain-api/masternode-health).
+
+For a closed look in it's functionality there's a [detailled documentation](https://docs.defichain-masternode-health.com/).
 
 # Installation
 
@@ -14,6 +16,9 @@ This script is designed to be a DeFiChain master node monitoring solution for DF
 ```
 pip3 install --upgrade masternode-health
 ```
+
+# Create API key
+This scripts needs a DeFiChain Masternode Health API key. Take a look at the [documentation](https://docs.defichain-masternode-health.com/#get-an-api-key).
 
 # Usage
 
