@@ -7,7 +7,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='masternode_health',
-    version='0.2.0',
+    version='0.2.1',
     author='Christian Sandrini',
     author_email='mail@chrissandrini.ch',
     packages=find_packages(include=['masternode_health', 'masternode_health.*']),
@@ -20,4 +20,5 @@ setup(
     entry_points={
         'console_scripts': ['masternode-health=masternode_health.monitor:main']
     },
+    python_requires='>2.7'
 )
