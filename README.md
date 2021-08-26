@@ -4,6 +4,7 @@
 
 
 # Masternode Health Server
+
 This script is designed for collecting server & DeFiChain node information of your system and send them to the [DeFiChain Masternode Health API](https://github.com/defichain-api/masternode-health).
 
 For a closed look in it's functionality there's a [detailled documentation](https://docs.defichain-masternode-health.com/).
@@ -20,12 +21,47 @@ pip3 install --upgrade masternode-health
 ```
 
 # Create API key
+
 This scripts needs a DeFiChain Masternode Health API key. Take a look at the [documentation](https://docs.defichain-masternode-health.com/#get-an-api-key).
+
+## tl;dr:
+
+Open up a new tab in your browser, paste in that URL
+
+```
+https://api.defichain-masternode-health.com/setup/api_key
+```
+
+You'll get something like this:
+
+```
+{"message":"API key generated","api_key":"537e13a8-d027-45db-8f51-92b5219b203f"}
+```
+
+The part after ```"api_key":"``` (```537e13a8-d027-45db-8f51-92b5219b203f```) is your API key. Copy it (without ```"}```), store it in a safe place like your password manager and close that browser tab because you don't need it anymore.
 
 # Usage
 
+## Prerequisites
+You can either run masternode-health by calling it with it's relative path in your user's directory:
+
 ```
-masternode-health --help
+~/.local/bin/masternode-health --help
+```
+
+OR you can create a symlink for making the ```masternode-health``` command accessible from anywhere on your system. The following command requires sudo rights.
+
+```
+sudo ln -sf ~/.local/bin/masternode-health /usr/local/bin/masternode-health
+```
+
+
+## Running Masternode Health
+
+To keep it simple, the following examples do not contain the relative path like described above.
+
+```
+$ masternode-health --help
 usage: masternode-health [-h] [--max-block-seconds MAX_BLOCK_SECONDS] [--rpcuser RPCUSER] [--rpcpassword RPCPASSWORD] [--rpchost RPCHOST] [--verbose] [--defi-path DEFI_PATH]
                          [--api-key API_KEY]
 
@@ -48,7 +84,7 @@ optional arguments:
 You can manually run it with
 
 ```
-masternode-health --rpcuser user --rpcpassword password --defi-path /home/user/.defi --verbose --api-key=xxx
+$ masternode-health --rpcuser rpc-username --rpcpassword rpc-password --defi-path /home/system-user/.defi --verbose --api-key=your-api-key
 
 ----- [ server stats ] -----
 Load Average:     0.13   
@@ -65,11 +101,33 @@ Operator ..xzy:     Online
 Operator ..oyx:     Online
 ```
 
-Add into crontab to check every 5 minutes
+Please don't forget to replace the following parts with your own:
+- rpc-username: your RPC username
+- rpc-password: your RPC password
+- system-user: the local username you're running on your machine
+- your-api-key: make an educated guess ;)
+
+# Run automatically with a cron job
+
+Add calling Masternode Health into your crontab to check every  minutes.
+
+First, open up a text editor to edit your crontab with:
 
 ```
-*/5 * * * * masternode-health --rpcuser user --rpcpassword password --defi-path /home/user/.defi --api-key=xxx
+crontab -e
 ```
+
+Add the following line to run it every 10 minutes: (Masternode Health won't accept any higher frequency than every 10 minutes)
+
+```
+*/10 * * * * ~/.local/bin/masternode-health --rpcuser rpc-username --rpcpassword rpc-password --defi-path /home/system-user/.defi --api-key=your-api-key
+```
+
+Please don't forget to replace the following parts with your own:
+- rpc-username: your RPC username
+- rpc-password: your RPC password
+- system-user: the local username you're running on your machine
+- your-api-key: make an educated guess ;)
 
 # Bugs or suggestions?
 Open issue or submit a pull request to
