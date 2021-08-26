@@ -50,20 +50,19 @@ You can manually run it with
 ```
 masternode-health --rpcuser user --rpcpassword password --defi-path /home/user/.defi --verbose --api-key=xxx
 
-############ mn server analysis ############
-Load Average: 0.14
-Memory Total: 126 GB
-Memory Used: 3 GB
-Disk Total: 933 GB
-Disk Used: 53 GB
-############ mn server analysis ############
-############ mn node info ############
-uptime: 2 days, 21:00:11
-Local block height: 1131809
-Local block hash: 4737d0f0633275a102142b37feb6ab6bf2ed3ab83ca58962a410ca70d6b089c7
-Operator xxx: Online
-Operator yyy: Online
-############ mn node info ############
+----- [ server stats ] -----
+Load Average:     0.13   
+Memory Total:      125 GB
+Memory Used:         3 GB
+Disk Total:        933 GB
+Disk Used:          53 GB
+
+----- [ node info ] -----
+Uptime:             4 days, 1:54:14                                             
+Local Block Height: 1135336                                                     
+Local Block Hash:   844b3007709ced3828d5ec49174523b118b7ce7ebd75d2aafb0a27d8fc50d17e
+Operator ..xzy:     Online                                                      
+Operator ..oyx:     Online
 ```
 
 Add into crontab to check every 5 minutes
