@@ -3,3 +3,6 @@ flake8
 requests
 coverage
 build
+pip
+wheel
+setuptools
