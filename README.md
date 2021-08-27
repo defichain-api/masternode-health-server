@@ -76,6 +76,8 @@ optional arguments:
                         RPC password
   --rpchost RPCHOST     RPC host (default: http://localhost:8554)
   --verbose             Prints stats to stdout
+  --report              Force sending report when using in combination with
+                        --verbose
   --defi-path DEFI_PATH
                         Path to your .defi folder. Example: /home/defi/.defi
   --api-key API_KEY     API Key
@@ -128,6 +130,11 @@ Please don't forget to replace the following parts with your own:
 - rpc-password: your RPC password
 - system-user: the local username you're running on your machine
 - your-api-key: make an educated guess ;)
+
+# Verbose
+
+To take a look at the collected data, you can use the `--verbose` argument.
+With this argument, no data is sent to the API. To force sending the data and viewing the verbose output use the `--report` argument in parallel.
 
 # Bugs or suggestions?
 Open issue or submit a pull request to
