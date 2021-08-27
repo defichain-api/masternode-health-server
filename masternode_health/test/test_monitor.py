@@ -235,7 +235,7 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
 
-        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--defi-path', 'path', '--api-key', 'key'])
+        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--defi-path', 'path', '--api-key', 'key'])
         self.assertRaises(SystemExit, processNodeInfo, args)
 
     @mock.patch('masternode_health.monitor.requests.post')
@@ -243,5 +243,21 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
 
-        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--defi-path', '/', '--api-key', 'key'])
+        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--defi-path', '/', '--api-key', 'key'])
+        self.assertRaises(SystemExit, processServerStats, args)
+    
+    @mock.patch('masternode_health.monitor.requests.post')
+    def test_processNodeInfo_with_verbose_failed(self, mock_post):
+        mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
+        mock_post.return_value = mock_resp
+
+        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--report', '--defi-path', 'path', '--api-key', 'key'])
+        self.assertRaises(SystemExit, processNodeInfo, args)
+
+    @mock.patch('masternode_health.monitor.requests.post')
+    def test_processServerStats_with_verbose_failed(self, mock_post):
+        mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
+        mock_post.return_value = mock_resp
+
+        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--report', '--defi-path', '/', '--api-key', 'key'])
         self.assertRaises(SystemExit, processServerStats, args)
