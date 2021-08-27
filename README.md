@@ -81,6 +81,7 @@ optional arguments:
   --defi-path DEFI_PATH
                         Path to your .defi folder. Example: /home/defi/.defi
   --api-key API_KEY     API Key
+  --version             Returns masternode-health version
 ```
 
 You can manually run it with
