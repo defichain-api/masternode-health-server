@@ -88,10 +88,11 @@ def processNodeInfo(args):
         'operator_status': list(map(lambda x: {'id': x[0], 'online': x[1]}, checkNodes))
     }
 
-    try:
-        reportJson(args.api_key, 'node-info', data_node_info)
-    except requests.exceptions.HTTPError as err:
-        raise SystemExit(err)
+    if (args.verbose and args.report) or not args.verbose:
+        try:
+            reportJson(args.api_key, 'node-info', data_node_info)
+        except requests.exceptions.HTTPError as err:
+            raise SystemExit(err)
 
     return server_info
 
@@ -115,10 +116,11 @@ def processServerStats(args):
         'ram_total': memTotal
     }
 
-    try:
-        reportJson(args.api_key, 'server-stats', data)
-    except requests.exceptions.HTTPError as err:
-        raise SystemExit(err)
+    if (args.verbose and args.report) or not args.verbose:
+        try:
+            reportJson(args.api_key, 'server-stats', data)
+        except requests.exceptions.HTTPError as err:
+            raise SystemExit(err)
 
     return server_stats
 
@@ -130,6 +132,7 @@ def parse_args(args):
     parser.add_argument('--rpcpassword', help='RPC password')
     parser.add_argument('--rpchost', help='RPC host (default: http://localhost:8554)', default='http://localhost:8554')
     parser.add_argument('--verbose', action='store_true', help='Prints stats to stdout')
+    parser.add_argument('--report', action='store_true', help='Force sending report when using in combination with --verbose')
     parser.add_argument('--defi-path', help='Path to your .defi folder. Example: /home/defi/.defi')
     parser.add_argument('--api-key', help='API Key')
     parser.add_argument('--version', help='Returns masternode-health version', action='store_true')
