@@ -4,6 +4,7 @@ import argparse
 import psutil
 import sys
 from datetime import datetime, timedelta
+from .version import __version__
 
 
 def rpcquery(method, rpchost, rpcuser, rpcpassword, params=False):
@@ -131,11 +132,15 @@ def parse_args(args):
     parser.add_argument('--verbose', action='store_true', help='Prints stats to stdout')
     parser.add_argument('--defi-path', help='Path to your .defi folder. Example: /home/defi/.defi')
     parser.add_argument('--api-key', help='API Key')
+    parser.add_argument('--version', help='Returns masternode-health version', action='store_true')
 
     args = parser.parse_args(args)
 
+    if args.version:
+        raise SystemExit(f'Version: {__version__}')
+
     if args.rpcuser is None or args.rpcpassword is None:
-        raise SystemExit('Please specify rpcuser and rpcpassword argument', )
+        raise SystemExit('Please specify rpcuser and rpcpassword argument')
 
     if args.defi_path is None:
         raise SystemExit('Please specify defi-path argument')
