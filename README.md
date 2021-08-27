@@ -112,7 +112,7 @@ Please don't forget to replace the following parts with your own:
 
 # Run automatically with a cron job
 
-Add calling Masternode Health into your crontab to check every  minutes.
+Add calling Masternode Health into your crontab to check every 10 minutes.
 
 First, open up a text editor to edit your crontab with:
 
@@ -125,6 +125,8 @@ Add the following line to run it every 10 minutes: (Masternode Health won't acce
 ```
 */10 * * * * ~/.local/bin/masternode-health --rpcuser rpc-username --rpcpassword rpc-password --defi-path /home/system-user/.defi --api-key=your-api-key
 ```
+
+**Warning:** The API allows only 1 call to each endpoint every 300 seconds. Don't let the cron run more often than every 5 minutes!
 
 Please don't forget to replace the following parts with your own:
 - rpc-username: your RPC username
