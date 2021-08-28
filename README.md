@@ -15,7 +15,9 @@ For a closed look in it's functionality there's a [detailled documentation](http
 - Run ```pip3 install masterhode-health```
 
 Make sure you set ```rpcuser=xxx``` and ```rpcpassword=xxx``` in your defi.conf
+You can choose the username and password by yourself. 
 
+**Hint:** restart your node after updating your defi.conf
 # Upgrade to the current release
 
 ```
