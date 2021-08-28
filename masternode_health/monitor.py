@@ -26,9 +26,6 @@ class NodeMonitor:
         self.rpcuser = conf['rpcuser']
         self.rpcpassword = conf['rpcpassword']
 
-        self._processNodeInfo()
-        self._processServerStats()
-
     def _readConfig(self):
         conf = {}
         with open(self.defi_conf) as f:
@@ -142,6 +139,10 @@ class NodeMonitor:
 
         return retval
 
+    def processNode(self):
+        self._processNodeInfo()
+        self._processServerStats()
+
     def sendReport(self):
         data_node_info = {
             'block_height_local': self.blockcount,
@@ -192,6 +193,7 @@ def main():
     args = parse_args(sys.argv[1:])
 
     nodeMonitor = NodeMonitor(args)
+    nodeMonitor.processNode()
 
     if args.verbose:
         print(nodeMonitor)
