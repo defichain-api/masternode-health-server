@@ -14,6 +14,10 @@ For a closed look in it's functionality there's a [detailled documentation](http
 - Install pip3 (pip from python v3. Some operating systems just name it ```pip```)
 - Run ```pip3 install masterhode-health```
 
+Make sure you set ```rpcuser=xxx``` and ```rpcpassword=xxx``` in your defi.conf
+You can choose the username and password by yourself. 
+
+**Hint:** restart your node after updating your defi.conf
 # Upgrade to the current release
 
 ```
@@ -62,8 +66,7 @@ To keep it simple, the following examples do not contain the relative path like 
 
 ```
 $ masternode-health --help
-usage: masternode-health [-h] [--max-block-seconds MAX_BLOCK_SECONDS] [--rpcuser RPCUSER] [--rpcpassword RPCPASSWORD] [--rpchost RPCHOST] [--verbose] [--defi-path DEFI_PATH]
-                         [--api-key API_KEY]
+usage: masternode-health [-h] [--max-block-seconds MAX_BLOCK_SECONDS] [--rpchost RPCHOST] [--verbose] [--report] [--defi-path DEFI_PATH] [--defi-conf DEFI_CONF] [--api-key API_KEY] [--version]
 
 DefiChain Masternode Monitor
 
@@ -71,15 +74,13 @@ optional arguments:
   -h, --help            show this help message and exit
   --max-block-seconds MAX_BLOCK_SECONDS
                         Alert if node did not try to calculate hash within max-block-seconds (default: 30 seconds)
-  --rpcuser RPCUSER     RPC username
-  --rpcpassword RPCPASSWORD
-                        RPC password
   --rpchost RPCHOST     RPC host (default: http://localhost:8554)
   --verbose             Prints stats to stdout
-  --report              Force sending report when using in combination with
-                        --verbose
+  --report              Force sending report when using in combination with --verbose
   --defi-path DEFI_PATH
-                        Path to your .defi folder. Example: /home/defi/.defi
+                        Path to your .defi folder. Default: ~/.defi
+  --defi-conf DEFI_CONF
+                        Path to your defi.conf. Default: ~/.defi/defi.conf
   --api-key API_KEY     API Key
   --version             Returns masternode-health version
 ```
@@ -87,7 +88,7 @@ optional arguments:
 You can manually run it with
 
 ```
-$ masternode-health --rpcuser rpc-username --rpcpassword rpc-password --defi-path /home/system-user/.defi --verbose --api-key=your-api-key
+$ masternode-health --verbose --report --api-key=your-api-key
 
 ----- [ server stats ] -----
 Load Average:     0.13   
@@ -105,9 +106,6 @@ Operator ..oyx:     Online
 ```
 
 Please don't forget to replace the following parts with your own:
-- rpc-username: your RPC username
-- rpc-password: your RPC password
-- system-user: the local username you're running on your machine
 - your-api-key: make an educated guess ;)
 
 # Run automatically with a cron job

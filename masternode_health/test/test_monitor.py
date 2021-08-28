@@ -1,53 +1,44 @@
-from masternode_health.monitor import rpcquery, checkAreNodesMining, reportJson, processNodeInfo, processServerStats, parse_args
+from masternode_health.monitor import NodeMonitor, parse_args
 from unittest import TestCase, mock
 from requests.exceptions import HTTPError
 from datetime import datetime
+from os.path import expanduser
 
 
 class ParserTest(TestCase):
 
     def test_all_arguments(self):
-        args = parse_args(['--rpcuser', 'test', '--rpchost', 'host', '--rpcpassword', 'password', '--verbose', '--defi-path', 'path', '--api-key', 'key', '--max-block-seconds', '30'])
+        args = parse_args(['--rpchost', 'host', '--verbose', '--defi-path', 'path', '--defi-conf', 'conf', '--api-key', 'key', '--max-block-seconds', '30', '--report'])
 
-        self.assertEqual(args.rpcuser, 'test')
         self.assertEqual(args.rpchost, 'host')
-        self.assertEqual(args.rpcpassword, 'password')
         self.assertTrue(args.verbose)
+        self.assertTrue(args.report)
         self.assertEqual(args.defi_path, 'path')
+        self.assertEqual(args.defi_conf, 'conf')
         self.assertEqual(args.api_key, 'key')
         self.assertEqual(args.max_block_seconds, 30)
 
     def test_default_arguments(self):
-        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--defi-path', 'path', '--api-key', 'key'])
+        args = parse_args(['--api-key', 'key'])
+        home = expanduser("~")
 
-        self.assertEqual(args.rpcuser, 'test')
         self.assertEqual(args.rpchost, 'http://localhost:8554')
-        self.assertEqual(args.rpcpassword, 'password')
-        self.assertTrue(args.verbose)
-        self.assertEqual(args.defi_path, 'path')
-        self.assertEqual(args.api_key, 'key')
+        self.assertEqual(args.defi_path, home + '/.defi')
+        self.assertEqual(args.defi_conf, home + '/.defi/defi.conf')
         self.assertEqual(args.max_block_seconds, 30)
 
-    def test_rpc_creds_missing(self):
-        with self.assertRaises(SystemExit) as cm:
-            parse_args([])
-
-        self.assertEqual(cm.exception.code, 'Please specify rpcuser and rpcpassword argument')
-
-    def test_defi_path_missing(self):
-        with self.assertRaises(SystemExit) as cm:
-            parse_args(['--rpcuser', 'test', '--rpcpassword', 'password'])
-
-        self.assertEqual(cm.exception.code, 'Please specify defi-path argument')
-
     def test_apikey_missing(self):
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(SystemExit):
             parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--defi-path', 'path'])
-
-        self.assertEqual(cm.exception.code, 'Please specify an api-key argument')
 
 
 class HealthMonitorTest(TestCase):
+
+    @mock.patch('masternode_health.monitor.open', mock.mock_open(read_data='rpcuser=user\nrpcpassword=password\n'))
+    def setUp(self):
+        args = parse_args(['--rpchost', 'host', '--verbose', '--api-key', 'key', '--max-block-seconds', '35', '--report', '--defi-path', '/'])
+        self.nm = NodeMonitor(args)
+        self.home = expanduser("~")
 
     def _mock_response(
             self,
@@ -75,6 +66,35 @@ class HealthMonitorTest(TestCase):
             )
         return mock_resp
 
+    @mock.patch('masternode_health.monitor.open', mock.mock_open(read_data=''))
+    def test_rpc_creds_missing(self):
+        args = parse_args(['--api-key', 'key'])
+        self.assertRaises(ValueError, NodeMonitor, args)
+
+    @mock.patch('masternode_health.monitor.open', mock.mock_open(read_data='[test]\nrpcuser=user\nrpcpassword=password\n'))
+    def test_rpc_creds_in_test_fails(self):
+        args = parse_args(['--api-key', 'key'])
+        self.assertRaises(ValueError, NodeMonitor, args)
+
+    @mock.patch('masternode_health.monitor.open', mock.mock_open(read_data='[test]\nrpcuser=bla\nrpcpassword=bla\n[main]\nrpcuser=user\nrpcpassword=password\n'))
+    def test_rpc_creds_in_test_and_main_ok(self):
+        args = parse_args(['--api-key', 'key'])
+        nm = NodeMonitor(args)
+        self.assertEqual(nm.rpcuser, 'user')
+        self.assertEqual(nm.rpcpassword, 'password')
+
+    @mock.patch('masternode_health.monitor.open', mock.mock_open(read_data='rpcuser=user\nrpcpassword=password\n'))
+    def test_NodeMonitor_init(self):
+        self.assertEqual(self.nm.defi_path, '/')
+        self.assertEqual(self.nm.defi_conf, self.home + '/.defi/defi.conf')
+        self.assertTrue(self.nm.verbose)
+        self.assertTrue(self.nm.report)
+        self.assertEqual(self.nm.max_block_seconds, 35)
+        self.assertEqual(self.nm.api_key, 'key')
+        self.assertEqual(self.nm.rpchost, 'host')
+        self.assertEqual(self.nm.rpcuser, 'user')
+        self.assertEqual(self.nm.rpcpassword, 'password')
+
     @mock.patch('masternode_health.monitor.requests.post')
     def test_rpcquery_ok(self, mock_post):
         data = {
@@ -84,7 +104,7 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=200, json_data=data)
         mock_post.return_value = mock_resp
 
-        result = rpcquery('getminiginfo', '', '', '')
+        result = self.nm._rpcquery('getminiginfo')
         self.assertEqual(result['test'], 'ok')
 
     @mock.patch('masternode_health.monitor.requests.post')
@@ -96,14 +116,14 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=200, json_data=data)
         mock_post.return_value = mock_resp
 
-        result = rpcquery('getminiginfo', '', '', '', params={'id': 1})
+        result = self.nm._rpcquery('getminiginfo', params={'id': 1})
         self.assertEqual(result['test'], 'ok')
 
     @mock.patch('masternode_health.monitor.requests.post')
     def test_rpcquery_failed(self, mock_post):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
-        self.assertRaises(HTTPError, rpcquery, 'getmininginfo', '', '', '')
+        self.assertRaises(HTTPError, self.nm._rpcquery, 'getmininginfo')
 
     @mock.patch('masternode_health.monitor.requests.post')
     def test_checkAreNodesMining_single_mn_fails(self, mock_post):
@@ -119,7 +139,7 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=200, json_data=data)
         mock_post.return_value = mock_resp
 
-        result = checkAreNodesMining(30, '', '', '')
+        result = self.nm._checkAreNodesMining()
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0][0], '8cb09568143d7bae6822a7a78f91cb907c23fd12dcf986d4d2c8de89457edf87')
@@ -140,7 +160,7 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=200, json_data=data)
         mock_post.return_value = mock_resp
 
-        result = checkAreNodesMining(30, '', '', '')
+        result = self.nm._checkAreNodesMining()
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0][0], '8cb09568143d7bae6822a7a78f91cb907c23fd12dcf986d4d2c8de89457edf87')
@@ -165,7 +185,7 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=200, json_data=data)
         mock_post.return_value = mock_resp
 
-        result = checkAreNodesMining(30, '', '', '')
+        result = self.nm._checkAreNodesMining()
 
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0][0], '8cb09568143d7bae6822a7a78f91cb907c23fd12dcf986d4d2c8de89457edf87')
@@ -192,7 +212,7 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=200, json_data=data)
         mock_post.return_value = mock_resp
 
-        result = checkAreNodesMining(30, '', '', '')
+        result = self.nm._checkAreNodesMining()
 
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0][0], '8cb09568143d7bae6822a7a78f91cb907c23fd12dcf986d4d2c8de89457edf87')
@@ -209,11 +229,11 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=200, json_data=data)
         mock_post.return_value = mock_resp
 
-        result = checkAreNodesMining(30, '', '', '')
+        result = self.nm._checkAreNodesMining()
         self.assertEqual(len(result), 0)
 
     @mock.patch('masternode_health.monitor.requests.post')
-    def test_reportJson_ok(self, mock_post):
+    def test_uploadToApi_ok(self, mock_post):
         data = {
             'result': {"message": "ok"}
         }
@@ -221,43 +241,27 @@ class HealthMonitorTest(TestCase):
         mock_resp = self._mock_response(status=200, json_data=data)
         mock_post.return_value = mock_resp
 
-        result = reportJson('key', 'endpoint', {})
+        result = self.nm._uploadToApi('endpoint', {})
         self.assertEqual(result['message'], 'ok')
 
     @mock.patch('masternode_health.monitor.requests.post')
-    def test_reportJson_failed(self, mock_post):
+    def test_uploadToApi_failed(self, mock_post):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
-        self.assertRaises(HTTPError, reportJson, 'key', 'endpoint', {})
+        self.assertRaises(HTTPError, self.nm._uploadToApi, 'endpoint', {})
 
     @mock.patch('masternode_health.monitor.requests.post')
     def test_processNodeInfo_failed(self, mock_post):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
 
-        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--defi-path', 'path', '--api-key', 'key'])
-        self.assertRaises(SystemExit, processNodeInfo, args)
+        self.assertRaises(SystemExit, self.nm._processNodeInfo)
 
     @mock.patch('masternode_health.monitor.requests.post')
-    def test_processServerStats_failed(self, mock_post):
-        mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
-        mock_post.return_value = mock_resp
-
-        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--defi-path', '/', '--api-key', 'key'])
-        self.assertRaises(SystemExit, processServerStats, args)
-    
-    @mock.patch('masternode_health.monitor.requests.post')
-    def test_processNodeInfo_with_verbose_failed(self, mock_post):
-        mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
-        mock_post.return_value = mock_resp
-
-        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--report', '--defi-path', 'path', '--api-key', 'key'])
-        self.assertRaises(SystemExit, processNodeInfo, args)
-
-    @mock.patch('masternode_health.monitor.requests.post')
-    def test_processServerStats_with_verbose_failed(self, mock_post):
-        mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
-        mock_post.return_value = mock_resp
-
-        args = parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--verbose', '--report', '--defi-path', '/', '--api-key', 'key'])
-        self.assertRaises(SystemExit, processServerStats, args)
+    def test_processServerStats_ok(self, mock_post):
+        self.nm._processServerStats()
+        self.assertGreater(self.nm.loadavg, 0)
+        self.assertGreater(self.nm.memUsed, 0)
+        self.assertGreater(self.nm.memTotal, 0)
+        self.assertGreater(self.nm.diskUsed, 0)
+        self.assertGreater(self.nm.diskTotal, 0)
