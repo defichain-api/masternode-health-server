@@ -88,7 +88,7 @@ optional arguments:
 You can manually run it with
 
 ```
-$ masternode-health --verbose --api-key=your-api-key
+$ masternode-health --verbose --report --api-key=your-api-key
 
 ----- [ server stats ] -----
 Load Average:     0.13   
