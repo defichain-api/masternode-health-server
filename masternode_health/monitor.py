@@ -4,7 +4,8 @@ import argparse
 import psutil
 import sys
 from datetime import datetime, timedelta
-from os.path import expanduser
+from os.path import expanduser, getsize
+from hashlib import md5
 from .version import __version__
 
 
@@ -109,6 +110,8 @@ class NodeMonitor:
             self.blockcount = self._rpcquery('getblockcount')
             self.bestblockhash = self._rpcquery('getbestblockhash')
             self.uptime = self._rpcquery('uptime')
+            self.connectioncount = self._rpcquery('getconnectioncount')
+            self.logSize = getsize(self.defi_path + '/debug.log') / 1024**2
         except requests.exceptions.HTTPError as err:
             raise SystemExit(err)
 
@@ -123,11 +126,11 @@ class NodeMonitor:
         self.diskTotal = disk.total / 1024**3
 
     def __repr__(self):
-        server_info = [('Uptime:', str(timedelta(seconds=self.uptime))), ('Local Block Height:', self.blockcount), ('Local Block Hash:', self.bestblockhash)]
+        server_info = [('Uptime:', str(timedelta(seconds=self.uptime))), ('Local Block Height:', self.blockcount), ('Local Block Hash:', self.bestblockhash), ('Connection Count:', self.connectioncount)]
         for nodeId, online in self.checkNodes:
             server_info.append((f'Operator ..{nodeId[:3]}:', 'Online' if online else 'Offline!'))
 
-        server_stats = [('Load Average:', self.loadavg, '   '), ('Memory Total:', int(self.memTotal), ' GB'), ('Memory Used:', int(self.memUsed), ' GB'), ('Disk Total:', int(self.diskTotal), ' GB'), ('Disk Used:', int(self.diskUsed), ' GB')]
+        server_stats = [('Load Average:', self.loadavg, '   '), ('Memory Total:', int(self.memTotal), ' GB'), ('Memory Used:', int(self.memUsed), ' GB'), ('Disk Total:', int(self.diskTotal), ' GB'), ('Disk Used:', int(self.diskUsed), ' GB'), ('Log Size:', int(self.logSize), ' MB')]
 
         retval = '----- [ server stats ] -----\n'
         for stat in server_stats:
@@ -143,12 +146,18 @@ class NodeMonitor:
         self._processNodeInfo()
         self._processServerStats()
 
+        with open(self.defi_conf, 'rb') as f:
+            self.confCheckSum = md5(f.read()).hexdigest()
+
     def sendReport(self):
         data_node_info = {
             'block_height_local': self.blockcount,
             'local_hash': self.bestblockhash,
             'node_uptime': self.uptime,
-            'operator_status': list(map(lambda x: {'id': x[0], 'online': x[1]}, self.checkNodes))
+            'operator_status': list(map(lambda x: {'id': x[0], 'online': x[1]}, self.checkNodes)),
+            'connection_count': self.connectioncount,
+            'logsize': self.logSize,
+            'config_checksum': self.confCheckSum
         }
 
         data_node_stats = {
