@@ -257,13 +257,10 @@ class HealthMonitorTest(TestCase):
 
         self.assertRaises(SystemExit, self.nm._processNodeInfo)
 
-    @mock.patch('os.stat')
-    def test_processServerStats_ok(self, mock_size):
-        mock_size.return_value.st_size = 2 * 1024 * 1024
+    def test_processServerStats_ok(self):
         self.nm._processServerStats()
         self.assertGreater(self.nm.loadavg, 0)
         self.assertGreater(self.nm.memUsed, 0)
         self.assertGreater(self.nm.memTotal, 0)
         self.assertGreater(self.nm.diskUsed, 0)
         self.assertGreater(self.nm.diskTotal, 0)
-        self.assertEqual(self.nm.logSize, 2)

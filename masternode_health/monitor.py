@@ -111,6 +111,7 @@ class NodeMonitor:
             self.bestblockhash = self._rpcquery('getbestblockhash')
             self.uptime = self._rpcquery('uptime')
             self.connectioncount = self._rpcquery('getconnectioncount')
+            self.logSize = getsize(self.defi_path + '/debug.log') / 1024**2
         except requests.exceptions.HTTPError as err:
             raise SystemExit(err)
 
@@ -123,7 +124,6 @@ class NodeMonitor:
         disk = psutil.disk_usage(self.defi_path)
         self.diskUsed = disk.used / 1024**3
         self.diskTotal = disk.total / 1024**3
-        self.logSize = getsize(self.defi_path + '/debug.log') / 1024**2
 
     def __repr__(self):
         server_info = [('Uptime:', str(timedelta(seconds=self.uptime))), ('Local Block Height:', self.blockcount), ('Local Block Hash:', self.bestblockhash), ('Connection Count:', self.connectioncount)]
@@ -154,7 +154,10 @@ class NodeMonitor:
             'block_height_local': self.blockcount,
             'local_hash': self.bestblockhash,
             'node_uptime': self.uptime,
-            'operator_status': list(map(lambda x: {'id': x[0], 'online': x[1]}, self.checkNodes))
+            'operator_status': list(map(lambda x: {'id': x[0], 'online': x[1]}, self.checkNodes)),
+            'connection_count': self.connectioncount,
+            'logsize': self.logSize,
+            'config_checksum': self.confCheckSum
         }
 
         data_node_stats = {
