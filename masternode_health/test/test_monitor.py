@@ -3,6 +3,7 @@ from unittest import TestCase, mock
 from requests.exceptions import HTTPError
 from datetime import datetime
 from os.path import expanduser
+import base64
 
 
 class ParserTest(TestCase):
@@ -29,7 +30,11 @@ class ParserTest(TestCase):
 
     def test_apikey_missing(self):
         with self.assertRaises(SystemExit):
-            parse_args(['--rpcuser', 'test', '--rpcpassword', 'password', '--defi-path', 'path'])
+            parse_args([])
+
+    def test_version(self):
+        with self.assertRaises(SystemExit):
+            parse_args(['--verison'])
 
 
 class HealthMonitorTest(TestCase):
@@ -245,6 +250,16 @@ class HealthMonitorTest(TestCase):
         self.assertEqual(result['message'], 'ok')
 
     @mock.patch('masternode_health.monitor.requests.post')
+    def test_uploadToApi_ok_without_result(self, mock_post):
+        data = {"message": "ok"}
+
+        mock_resp = self._mock_response(status=200, json_data=data)
+        mock_post.return_value = mock_resp
+
+        result = self.nm._uploadToApi('endpoint', {})
+        self.assertEqual(result['message'], 'ok')
+
+    @mock.patch('masternode_health.monitor.requests.post')
     def test_uploadToApi_failed(self, mock_post):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
@@ -264,3 +279,25 @@ class HealthMonitorTest(TestCase):
         self.assertGreater(self.nm.memTotal, 0)
         self.assertGreater(self.nm.diskUsed, 0)
         self.assertGreater(self.nm.diskTotal, 0)
+
+    @mock.patch('masternode_health.monitor.requests.post')
+    def test_processNode_fail(self, mock_post):
+        mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
+        mock_post.return_value = mock_resp
+
+        self.assertRaises(SystemExit, self.nm.processNode)
+
+    def test_toString(self):
+        self.nm.uptime = 0
+        self.nm.blockcount = 0
+        self.nm.bestblockhash = "best"
+        self.nm.connectioncount = 0
+        self.nm.checkNodes = [('server', True)]
+        self.nm.loadavg = 0
+        self.nm.memTotal = 0
+        self.nm.memUsed = 0
+        self.nm.diskTotal = 0
+        self.nm.diskUsed = 0
+        self.nm.logSize = 0
+        ret = self.nm.__repr__()
+        self.assertEqual(base64.b64encode(ret.encode('ascii')), b'LS0tLS0gWyBzZXJ2ZXIgc3RhdHMgXSAtLS0tLQpMb2FkIEF2ZXJhZ2U6ICAgICAgICAwICAgCk1lbW9yeSBUb3RhbDogICAgICAgIDAgR0IKTWVtb3J5IFVzZWQ6ICAgICAgICAgMCBHQgpEaXNrIFRvdGFsOiAgICAgICAgICAwIEdCCkRpc2sgVXNlZDogICAgICAgICAgIDAgR0IKTG9nIFNpemU6ICAgICAgICAgICAgMCBNQgoKLS0tLS0gWyBub2RlIGluZm8gXSAtLS0tLQpVcHRpbWU6ICAgICAgICAgICAgIDA6MDA6MDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApMb2NhbCBCbG9jayBIZWlnaHQ6IDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApMb2NhbCBCbG9jayBIYXNoOiAgIGJlc3QgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApDb25uZWN0aW9uIENvdW50OiAgIDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApPcGVyYXRvciAuLnNlcjogICAgIE9ubGluZSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAo=')
