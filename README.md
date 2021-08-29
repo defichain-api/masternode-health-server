@@ -141,5 +141,9 @@ With this argument, no data is sent to the API. To force sending the data and vi
 Open issue or submit a pull request to
 [https://github.com/defichain-api/masternode-health-server](https://github.com/defichain-api/masternode-health-server)
 
+# Buy me a coffee
+@sandrich implemented this tool alone. Want to give him a small thank you? His coffee cash box (in DFI) is:
+**df1qvzdgd85m67eym95l0jxrdn6aue5cjthpg78r4z**
+
 # License
 MIT
