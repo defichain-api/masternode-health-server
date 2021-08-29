@@ -91,18 +91,21 @@ You can manually run it with
 $ masternode-health --verbose --report --api-key=your-api-key
 
 ----- [ server stats ] -----
-Load Average:     0.13   
+Load Average:     0.04   
 Memory Total:      125 GB
 Memory Used:         3 GB
 Disk Total:        933 GB
 Disk Used:          53 GB
+Log Size:           14 MB
 
 ----- [ node info ] -----
-Uptime:             4 days, 1:54:14                                             
-Local Block Height: 1135336                                                     
-Local Block Hash:   844b3007709ced3828d5ec49174523b118b7ce7ebd75d2aafb0a27d8fc50d17e
-Operator ..xzy:     Online                                                      
-Operator ..oyx:     Online
+Uptime:             7 days, 0:56:31                                             
+Local Block Height: 1143904                                                     
+Local Block Hash:   9ca59cb8ee7e87520fd322cd8c12f5cb5d525e6dac04bbf2d1b6ce6c9e891461
+Connection Count:   8                                                           
+Operator ..xyz:     Online                                                      
+Operator ..abc:     Online                                                      
+
 ```
 
 Please don't forget to replace the following parts with your own:
@@ -121,15 +124,12 @@ crontab -e
 Add the following line to run it every 10 minutes: (Masternode Health won't accept any higher frequency than every 10 minutes)
 
 ```
-*/10 * * * * ~/.local/bin/masternode-health --rpcuser rpc-username --rpcpassword rpc-password --defi-path /home/system-user/.defi --api-key=your-api-key
+*/10 * * * * ~/.local/bin/masternode-health --api-key=your-api-key
 ```
 
 **Warning:** The API allows only 1 call to each endpoint every 300 seconds. Don't let the cron run more often than every 5 minutes!
 
 Please don't forget to replace the following parts with your own:
-- rpc-username: your RPC username
-- rpc-password: your RPC password
-- system-user: the local username you're running on your machine
 - your-api-key: make an educated guess ;)
 
 # Verbose
