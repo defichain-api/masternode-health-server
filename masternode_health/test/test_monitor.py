@@ -3,7 +3,7 @@ from unittest import TestCase, mock
 from requests.exceptions import HTTPError
 from datetime import datetime
 from os.path import expanduser
-import base64
+import hashlib
 
 
 class ParserTest(TestCase):
@@ -34,7 +34,7 @@ class ParserTest(TestCase):
 
     def test_version(self):
         with self.assertRaises(SystemExit):
-            parse_args(['--verison'])
+            parse_args(['--api-key', 'bla', '--verison'])
 
 
 class HealthMonitorTest(TestCase):
@@ -294,10 +294,16 @@ class HealthMonitorTest(TestCase):
         self.nm.connectioncount = 0
         self.nm.checkNodes = [('server', True)]
         self.nm.loadavg = 0
-        self.nm.memTotal = 0
-        self.nm.memUsed = 0
-        self.nm.diskTotal = 0
-        self.nm.diskUsed = 0
+        self.nm.memTotal = 5
+        self.nm.memUsed = 2
+        self.nm.diskTotal = 5
+        self.nm.diskUsed = 2
         self.nm.logSize = 0
+        self.nm.nodeVersion = "1"
+        self.nm.numCores = 10
         ret = self.nm.__repr__()
-        self.assertEqual(base64.b64encode(ret.encode('ascii')), b'LS0tLS0gWyBzZXJ2ZXIgc3RhdHMgXSAtLS0tLQpMb2FkIEF2ZXJhZ2U6ICAgICAgICAwICAgCk1lbW9yeSBUb3RhbDogICAgICAgIDAgR0IKTWVtb3J5IFVzZWQ6ICAgICAgICAgMCBHQgpEaXNrIFRvdGFsOiAgICAgICAgICAwIEdCCkRpc2sgVXNlZDogICAgICAgICAgIDAgR0IKTG9nIFNpemU6ICAgICAgICAgICAgMCBNQgoKLS0tLS0gWyBub2RlIGluZm8gXSAtLS0tLQpVcHRpbWU6ICAgICAgICAgICAgIDA6MDA6MDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApMb2NhbCBCbG9jayBIZWlnaHQ6IDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApMb2NhbCBCbG9jayBIYXNoOiAgIGJlc3QgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApDb25uZWN0aW9uIENvdW50OiAgIDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApPcGVyYXRvciAuLnNlcjogICAgIE9ubGluZSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAo=')
+        self.assertEqual(hashlib.md5(ret.encode('utf-8')).hexdigest(), 'c8ba5aea4a06267e80bbea333493c16a')
+
+    def test_drawProgressBar(self):
+        progress = self.nm._drawProgressBar(0.5)
+        self.assertEqual(progress, '[▰▰▰▰▰▰▰        ] 50%')

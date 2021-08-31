@@ -91,20 +91,19 @@ You can manually run it with
 $ masternode-health --verbose --report --api-key=your-api-key
 
 ----- [ server stats ] -----
-Load Average:     0.04   
-Memory Total:      125 GB
-Memory Used:         3 GB
-Disk Total:        933 GB
-Disk Used:          53 GB
-Log Size:           14 MB
+System Load    [               ] 1%   
+Memory Usage:  [               ] 3%   
+Disk Usage:    [               ] 6%   
+Log Size:      16 MB     
 
 ----- [ node info ] -----
-Uptime:             7 days, 0:56:31                                             
-Local Block Height: 1143904                                                     
-Local Block Hash:   9ca59cb8ee7e87520fd322cd8c12f5cb5d525e6dac04bbf2d1b6ce6c9e891461
+Node Version:       v1.8.1.0-release                                            
+Uptime:             9 days, 2:50:25                                             
+Local Block Height: 1149879                                                     
+Local Block Hash:   526fe2a061a9a7bde7b07d308b986624c1dd49aee0ac58b2ad982dd300416ef6
 Connection Count:   8                                                           
-Operator ..xyz:     Online                                                      
-Operator ..abc:     Online                                                      
+Operator ..xzy:     ✅                                                           
+Operator ..abc:     ✅                                                          
 
 ```
 
