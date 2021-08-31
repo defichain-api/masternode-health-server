@@ -140,7 +140,7 @@ class NodeMonitor:
         for nodeId, online in self.checkNodes:
             server_info.append((f'Operator ..{nodeId[:3]}:', '✅' if online else '❌'))
 
-        server_stats = [('System Load', self._drawProgressBar(self.loadavg / (self.numCores * 1.5)), '   '), ('Memory Usage:', self._drawProgressBar(self.memUsed / self.memTotal), '   '), ('Disk Usage:', self._drawProgressBar(self.diskUsed / self.diskTotal), '   '), ('Log Size:', int(self.logSize), ' MB')]
+        server_stats = [('System Load', self._drawProgressBar(self.loadavg / (self.numCores * 1.5)), f' ({self.loadavg}/{(self.numCores * 1.5)})'), ('Memory Usage:', self._drawProgressBar(self.memUsed / self.memTotal), f' ({int(self.memUsed)}/{int(self.memTotal)} GB)'), ('Disk Usage:', self._drawProgressBar(self.diskUsed / self.diskTotal), f' ({int(self.diskUsed)}/{int(self.diskTotal)} GB)'), ('Log Size:', int(self.logSize), ' MB')]
 
         retval = '----- [ server stats ] -----\n'
         for stat in server_stats:

@@ -302,7 +302,7 @@ class HealthMonitorTest(TestCase):
         self.nm.nodeVersion = "1"
         self.nm.numCores = 10
         ret = self.nm.__repr__()
-        self.assertEqual(hashlib.md5(ret.encode('utf-8')).hexdigest(), '1c72c2fd890e75e4d81449114de52764')
+        self.assertEqual(hashlib.md5(ret.encode('utf-8')).hexdigest(), 'c8ba5aea4a06267e80bbea333493c16a')
 
     def test_drawProgressBar(self):
         progress = self.nm._drawProgressBar(0.5)
