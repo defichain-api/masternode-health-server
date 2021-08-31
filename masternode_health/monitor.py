@@ -3,6 +3,8 @@ import json
 import argparse
 import psutil
 import sys
+import multiprocessing
+import subprocess
 from datetime import datetime, timedelta
 from os.path import expanduser, getsize
 from hashlib import md5
@@ -112,6 +114,8 @@ class NodeMonitor:
             self.uptime = self._rpcquery('uptime')
             self.connectioncount = self._rpcquery('getconnectioncount')
             self.logSize = getsize(self.defi_path + '/debug.log') / 1024**2
+            lines = subprocess.Popen([self.defi_path + '/defid', '--version'], stdout=subprocess.PIPE).communicate()[0]
+            self.nodeVersion = lines.splitlines()[0].split(b' ')[-1].decode()
         except requests.exceptions.HTTPError as err:
             raise SystemExit(err)
 
@@ -125,16 +129,22 @@ class NodeMonitor:
         self.diskUsed = disk.used / 1024**3
         self.diskTotal = disk.total / 1024**3
 
-    def __repr__(self):
-        server_info = [('Uptime:', str(timedelta(seconds=self.uptime))), ('Local Block Height:', self.blockcount), ('Local Block Hash:', self.bestblockhash), ('Connection Count:', self.connectioncount)]
-        for nodeId, online in self.checkNodes:
-            server_info.append((f'Operator ..{nodeId[:3]}:', 'Online' if online else 'Offline!'))
+        self.numCores = multiprocessing.cpu_count()
 
-        server_stats = [('Load Average:', self.loadavg, '   '), ('Memory Total:', int(self.memTotal), ' GB'), ('Memory Used:', int(self.memUsed), ' GB'), ('Disk Total:', int(self.diskTotal), ' GB'), ('Disk Used:', int(self.diskUsed), ' GB'), ('Log Size:', int(self.logSize), ' MB')]
+    def _drawProgressBar(self, percent, barLen=15):
+        # percent float from 0 to 1.
+        return "[{:<{}}] {:.0f}%".format('▰' * int(barLen * percent), barLen, percent * 100)
+
+    def __repr__(self):
+        server_info = [('Node Version:', self.nodeVersion), ('Uptime:', str(timedelta(seconds=self.uptime))), ('Local Block Height:', self.blockcount), ('Local Block Hash:', self.bestblockhash), ('Connection Count:', self.connectioncount)]
+        for nodeId, online in self.checkNodes:
+            server_info.append((f'Operator ..{nodeId[:3]}:', '✅' if online else '❌'))
+
+        server_stats = [('System Load', self._drawProgressBar(self.loadavg / (self.numCores * 1.5)), '   '), ('Memory Usage:', self._drawProgressBar(self.memUsed / self.memTotal), '   '), ('Disk Usage:', self._drawProgressBar(self.diskUsed / self.diskTotal), '   '), ('Log Size:', int(self.logSize), ' MB')]
 
         retval = '----- [ server stats ] -----\n'
         for stat in server_stats:
-            retval += '{:<15s}{:>10s}\n'.format(stat[0], str(stat[1]) + stat[2])
+            retval += '{:<15s}{:<10s}\n'.format(stat[0], str(stat[1]) + stat[2])
 
         retval += '\n----- [ node info ] -----\n'
         for stat in server_info:
@@ -157,7 +167,8 @@ class NodeMonitor:
             'operator_status': list(map(lambda x: {'id': x[0], 'online': x[1]}, self.checkNodes)),
             'connection_count': self.connectioncount,
             'logsize': self.logSize,
-            'config_checksum': self.confCheckSum
+            'config_checksum': self.confCheckSum,
+            'node_version': self.nodeVersion
         }
 
         data_node_stats = {
@@ -165,7 +176,8 @@ class NodeMonitor:
             'hdd_used': self.diskUsed,
             'hdd_total': self.diskTotal,
             'ram_used': self.memUsed,
-            'ram_total': self.memTotal
+            'ram_total': self.memTotal,
+            'num_cores': self.numCores
         }
 
         try:
@@ -209,3 +221,7 @@ def main():
 
     if (args.verbose and args.report) or not args.verbose:
         nodeMonitor.sendReport()
+
+
+if __name__ == '__main__':
+    main()
