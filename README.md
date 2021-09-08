@@ -12,7 +12,7 @@ For a closed look in it's functionality there's a [detailled documentation](http
 # Installation
 
 - Install pip3 (pip from python v3. Some operating systems just name it ```pip```)
-- Run ```pip3 install masterhode-health```
+- Run ```pip3 install masternode-health```
 
 Make sure you set ```rpcuser=xxx``` and ```rpcpassword=xxx``` in your defi.conf
 You can choose the username and password by yourself. 
