@@ -26,7 +26,7 @@ setup(
     description='This script is designed for collecting server & DeFiChain node information of your system and send them to the DeFiChain Masternode Health API',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    install_requires=['psutil'],
+    install_requires=['psutil', 'requests'],
     entry_points={
         'console_scripts': ['masternode-health=masternode_health.monitor:main']
     },
