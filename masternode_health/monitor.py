@@ -65,14 +65,14 @@ class NodeMonitor:
         }
 
         try:
-        response = requests.post(self.rpchost, auth=(self.rpcuser, self.rpcpassword), headers=headers, data=json.dumps(data), timeout=1000)
-        response.raise_for_status()
+            response = requests.post(self.rpchost, auth=(self.rpcuser, self.rpcpassword), headers=headers, data=json.dumps(data), timeout=1000)
+            response.raise_for_status()
 
-        data = response.json()
+            data = response.json()
 
-        if 'result' in data:
-            return data['result']
-        return data
+            if 'result' in data:
+                return data['result']
+            return data
         except requests.exceptions.ConnectionError:
             print("❌ Your defid process seems to be down or RPC server is not reachable!")
             if (self.verbose and self.report) or not self.verbose:
@@ -187,7 +187,8 @@ class NodeMonitor:
             'hdd_total': self.diskTotal,
             'ram_used': self.memUsed,
             'ram_total': self.memTotal,
-            'num_cores': self.numCores
+            'num_cores': self.numCores,
+            'server_script_version': __version__
         }
 
         try:
