@@ -36,6 +36,10 @@ class ParserTest(TestCase):
         args = parse_args(['--verbose'])
         self.assertTrue(args.verbose)
 
+    def test_apikey_missing_but_verbose_and_report(self):
+        with self.assertRaises(SystemExit):
+            parse_args(['--verbose', '--report'])
+
     def test_version(self):
         with self.assertRaises(SystemExit):
             parse_args(['--api-key', 'bla', '--verison'])

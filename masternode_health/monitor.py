@@ -215,7 +215,7 @@ def parse_args(args):
     if args.version:
         raise SystemExit(f'Version: {__version__}')
 
-    if args.api_key is None and not args.verbose:
+    if (args.api_key is None and not args.verbose) or (args.api_key is None and args.verbose and args.report):
         raise SystemExit('Please specify an api-key argument')
 
     return args
