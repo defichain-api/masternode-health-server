@@ -64,6 +64,7 @@ class NodeMonitor:
             'params': params
         }
 
+        try:
         response = requests.post(self.rpchost, auth=(self.rpcuser, self.rpcpassword), headers=headers, data=json.dumps(data), timeout=1000)
         response.raise_for_status()
 
@@ -72,6 +73,15 @@ class NodeMonitor:
         if 'result' in data:
             return data['result']
         return data
+        except requests.exceptions.ConnectionError:
+            print("❌ Your defid process seems to be down or RPC server is not reachable!")
+            if (self.verbose and self.report) or not self.verbose:
+                try:
+                    self._uploadToApi('node-info', {"defid_running": False})
+                    print("✅ Sent report to masternode-health api")
+                except:
+                    print("❌ Could not send report to masternode-health api")
+            raise SystemExit()
 
     def _uploadToApi(self, endpoint, data):
         headers = {'x-api-key': self.api_key}
