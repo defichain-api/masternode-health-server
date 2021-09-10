@@ -36,7 +36,7 @@ class NodeMonitor:
             ignore = False
 
             for line in lines:
-                var = line.split('=')
+                var = line.split('=', 1)
 
                 if len(var) == 1 and 'test' in var[0]:
                     ignore = True
