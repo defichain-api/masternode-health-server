@@ -79,7 +79,7 @@ class NodeMonitor:
                 try:
                     self._uploadToApi('node-info', {"defid_running": False})
                     print("✅ Sent report to masternode-health api")
-                except:
+                except requests.exceptions.HTTPError:
                     print("❌ Could not send report to masternode-health api")
             raise SystemExit()
 
