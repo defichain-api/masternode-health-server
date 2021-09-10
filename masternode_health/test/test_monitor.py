@@ -87,6 +87,13 @@ class HealthMonitorTest(TestCase):
         nm = NodeMonitor(args)
         self.assertEqual(nm.rpcuser, 'user')
         self.assertEqual(nm.rpcpassword, 'password')
+    
+    @mock.patch('masternode_health.monitor.open', mock.mock_open(read_data='rpcuser=user\nrpcpassword=pass=word\n'))
+    def test_rpc_creds_in_test_and_have_equal_sign(self):
+        args = parse_args(['--api-key', 'key'])
+        nm = NodeMonitor(args)
+        self.assertEqual(nm.rpcuser, 'user')
+        self.assertEqual(nm.rpcpassword, 'pass=word')
 
     @mock.patch('masternode_health.monitor.open', mock.mock_open(read_data='rpcuser=user\nrpcpassword=password\n'))
     def test_NodeMonitor_init(self):
