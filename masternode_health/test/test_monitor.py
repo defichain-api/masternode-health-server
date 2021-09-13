@@ -32,6 +32,14 @@ class ParserTest(TestCase):
         with self.assertRaises(SystemExit):
             parse_args([])
 
+    def test_apikey_missing_but_verbose(self):
+        args = parse_args(['--verbose'])
+        self.assertTrue(args.verbose)
+
+    def test_apikey_missing_but_verbose_and_report(self):
+        with self.assertRaises(SystemExit):
+            parse_args(['--verbose', '--report'])
+
     def test_version(self):
         with self.assertRaises(SystemExit):
             parse_args(['--api-key', 'bla', '--verison'])
@@ -270,7 +278,7 @@ class HealthMonitorTest(TestCase):
     def test_uploadToApi_failed(self, mock_post):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
-        self.assertRaises(HTTPError, self.nm._uploadToApi, 'endpoint', {})
+        self.assertRaises(SystemExit, self.nm._uploadToApi, 'endpoint', {})
 
     @mock.patch('masternode_health.monitor.requests.post')
     def test_processNodeInfo_failed(self, mock_post):

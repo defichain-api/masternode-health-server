@@ -64,25 +64,36 @@ class NodeMonitor:
             'params': params
         }
 
-        response = requests.post(self.rpchost, auth=(self.rpcuser, self.rpcpassword), headers=headers, data=json.dumps(data), timeout=1000)
-        response.raise_for_status()
+        try:
+            response = requests.post(self.rpchost, auth=(self.rpcuser, self.rpcpassword), headers=headers, data=json.dumps(data), timeout=1000)
+            response.raise_for_status()
 
-        data = response.json()
+            data = response.json()
 
-        if 'result' in data:
-            return data['result']
-        return data
+            if 'result' in data:
+                return data['result']
+            return data
+        except requests.exceptions.ConnectionError:
+            print("❌ Your defid process seems to be down or RPC server is not reachable!")
+            self._uploadToApi('node-info', {"defid_running": False})
+            raise SystemExit()
 
     def _uploadToApi(self, endpoint, data):
         headers = {'x-api-key': self.api_key}
-        r = requests.post(f'https://api.defichain-masternode-health.com/v1/{endpoint}', headers=headers, json=data)
-        r.raise_for_status()
+        try:
+            r = requests.post(f'https://api.defichain-masternode-health.com/v1/{endpoint}', headers=headers, json=data)
+            r.raise_for_status()
+            data = r.json()
 
-        data = r.json()
-        if 'result' in data:
-            return data['result']
+            if self.verbose and self.report:
+                print(f"✅ Sent report to masternode-health api with endpoint {endpoint}")
 
-        return data
+            if 'result' in data:
+                return data['result']
+
+            return data
+        except requests.exceptions.HTTPError:
+            raise SystemExit(f"❌ Could not send report to masternode-health api with endpoint {endpoint}")
 
     def _checkAreNodesMining(self):
         '''
@@ -177,7 +188,8 @@ class NodeMonitor:
             'hdd_total': self.diskTotal,
             'ram_used': self.memUsed,
             'ram_total': self.memTotal,
-            'num_cores': self.numCores
+            'num_cores': self.numCores,
+            'server_script_version': __version__
         }
 
         try:
@@ -204,7 +216,7 @@ def parse_args(args):
     if args.version:
         raise SystemExit(f'Version: {__version__}')
 
-    if args.api_key is None:
+    if (args.api_key is None and not args.verbose) or (args.api_key is None and args.verbose and args.report):
         raise SystemExit('Please specify an api-key argument')
 
     return args
