@@ -75,24 +75,25 @@ class NodeMonitor:
             return data
         except requests.exceptions.ConnectionError:
             print("❌ Your defid process seems to be down or RPC server is not reachable!")
-            if (self.verbose and self.report) or not self.verbose:
-                try:
-                    self._uploadToApi('node-info', {"defid_running": False})
-                    print("✅ Sent report to masternode-health api")
-                except requests.exceptions.HTTPError:
-                    print("❌ Could not send report to masternode-health api")
+            self._uploadToApi('node-info', {"defid_running": False})
             raise SystemExit()
 
     def _uploadToApi(self, endpoint, data):
         headers = {'x-api-key': self.api_key}
-        r = requests.post(f'https://api.defichain-masternode-health.com/v1/{endpoint}', headers=headers, json=data)
-        r.raise_for_status()
+        try:
+            r = requests.post(f'https://api.defichain-masternode-health.com/v1/{endpoint}', headers=headers, json=data)
+            r.raise_for_status()
+            data = r.json()
 
-        data = r.json()
-        if 'result' in data:
-            return data['result']
+            if self.verbose and self.report:
+                print(f"✅ Sent report to masternode-health api with endpoint {endpoint}")
 
-        return data
+            if 'result' in data:
+                return data['result']
+
+            return data
+        except requests.exceptions.HTTPError:
+            raise SystemExit(f"❌ Could not send report to masternode-health api with endpoint {endpoint}")
 
     def _checkAreNodesMining(self):
         '''

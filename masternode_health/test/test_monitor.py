@@ -278,7 +278,7 @@ class HealthMonitorTest(TestCase):
     def test_uploadToApi_failed(self, mock_post):
         mock_resp = self._mock_response(status=500, raise_for_status=HTTPError("rpcerror"))
         mock_post.return_value = mock_resp
-        self.assertRaises(HTTPError, self.nm._uploadToApi, 'endpoint', {})
+        self.assertRaises(SystemExit, self.nm._uploadToApi, 'endpoint', {})
 
     @mock.patch('masternode_health.monitor.requests.post')
     def test_processNodeInfo_failed(self, mock_post):
