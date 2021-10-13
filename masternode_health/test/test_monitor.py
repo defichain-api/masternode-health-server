@@ -287,6 +287,13 @@ class HealthMonitorTest(TestCase):
 
         self.assertRaises(SystemExit, self.nm._processNodeInfo)
 
+    @mock.patch('masternode_health.monitor.requests.post')
+    def test_processNodeInfo_no_debuglog(self, mock_post):
+        mock_resp = self._mock_response(status=500, raise_for_status=OSError("No debug log"))
+        mock_post.return_value = mock_resp
+
+        self.assertRaises(SystemExit, self.nm._processNodeInfo)
+
     def test_processServerStats_ok(self):
         self.nm._processServerStats()
         self.assertGreater(self.nm.loadavg, 0)
