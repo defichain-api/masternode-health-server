@@ -129,8 +129,8 @@ class NodeMonitor:
             self.nodeVersion = lines.splitlines()[0].split(b' ')[-1].decode()
         except requests.exceptions.HTTPError as err:
             raise SystemExit(err)
-        except OSError:
-            raise SystemExit(f"❌ Could not open {self.defi_path}/debug.log")
+        except OSError as err:
+            raise SystemExit(f"❌ Could not open {self.defi_path}/debug.log {err}")
 
     def _processServerStats(self):
         self.loadavg = psutil.getloadavg()[1]
